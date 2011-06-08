@@ -671,6 +671,15 @@ protected:
 
     // Immutable calibration parameters in parsed form.
     struct Calibration {
+        // Pointercal
+        float pointercalX1;
+        float pointercalX2;
+        float pointercalX3;
+        float pointercalY1;
+        float pointercalY2;
+        float pointercalY3;
+        float pointercalScale;
+
         // Touch Size
         enum TouchSizeCalibration {
             TOUCH_SIZE_CALIBRATION_DEFAULT,
