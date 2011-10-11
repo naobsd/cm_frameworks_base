@@ -26,6 +26,7 @@
 #define DEBUG_MOUSE_EVENTS 0
 
 #include <cutils/log.h>
+#include <cutils/properties.h>
 #include <ui/InputReader.h>
 
 #include <stddef.h>
@@ -39,6 +40,11 @@
 #define INDENT2 "    "
 #define INDENT3 "      "
 #define INDENT4 "        "
+
+namespace {
+    int32_t offset_x;
+    int32_t offset_y;
+}
 
 namespace android {
 
@@ -1737,6 +1743,13 @@ void TouchInputMapper::parseCalibration() {
     const InputDeviceCalibration& in = getDevice()->getCalibration();
     Calibration& out = mCalibration;
 
+    // XXX hack for Haipad M701/M1001
+    char propBuf[PROPERTY_VALUE_MAX];
+    property_get("touch.offset_x", propBuf, "0");
+    offset_x = atoi(propBuf);
+    property_get("touch.offset_y", propBuf, "0");
+    offset_y = atoi(propBuf);
+
     // Pointercal
     if (! in.tryGetProperty(String8("touch.pointercal.x1"), out.pointercalX1)) {
         out.pointercalX1 = 1.0f;
@@ -2251,7 +2264,8 @@ TouchInputMapper::TouchResult TouchInputMapper::consumeOffScreenTouches(
                             goto DispatchVirtualKey;
                         }
                     }
-                    return DROP_STROKE;
+                    // XXX hack for Haipad M701/M1001
+                    //return DROP_STROKE;
                 }
             }
             return DISPATCH_TOUCH;
@@ -2405,15 +2419,28 @@ void TouchInputMapper::dispatchTouch(nsecs_t when, uint32_t policyFlags,
 
             const PointerData& in = touch->pointers[inIndex];
 
+            // XXX hack for Haipad M701/M1001
+            int32_t inx = in.x, iny = in.y;
+            if (offset_x) {
+                if (inx >= 32768)
+                    inx -= 65536;
+                inx -= offset_x;
+            }
+            if (offset_y) {
+                if (iny >= 32768)
+                    iny -= 65536;
+                iny -= offset_y;
+            }
+
             // X and Y
             float x, y;
             if (mCalibration.pointercalScale == 1.0f) {
-                x = float(in.x - mLocked.xOrigin) * mLocked.xScale;
-                y = float(in.y - mLocked.yOrigin) * mLocked.yScale;
+                x = float(inx - mLocked.xOrigin) * mLocked.xScale;
+                y = float(iny - mLocked.yOrigin) * mLocked.yScale;
             } else {
                 // Pointercal
-                float rawx = float(in.x - mLocked.xOrigin);
-                float rawy = float(in.y - mLocked.yOrigin);
+                float rawx = float(inx - mLocked.xOrigin);
+                float rawy = float(iny - mLocked.yOrigin);
                 x = mCalibration.pointercalX1 * rawx +
                     mCalibration.pointercalX2 * rawy +
                     mCalibration.pointercalX3;
