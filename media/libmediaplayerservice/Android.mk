@@ -40,7 +40,7 @@ LOCAL_SHARED_LIBRARIES :=     		\
 LOCAL_STATIC_LIBRARIES := \
         libstagefright_rtsp
 
-ifneq ($(BUILD_WITHOUT_PV),true)
+ifeq ($(TARGET_BOARD_PLATFORM),rk2818)
 LOCAL_SHARED_LIBRARIES += \
 	libopencore_player    \
 	libopencore_author

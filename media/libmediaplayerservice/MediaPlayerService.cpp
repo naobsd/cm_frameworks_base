@@ -67,7 +67,6 @@
 #endif
 
 #ifdef USE_BOARD_MEDIAPLUGIN
-#define NO_OPENCORE 1
 #include <hardware_legacy/MediaPlayerHardwareInterface.h>
 #endif
 
@@ -206,19 +205,16 @@ extmap FILE_EXTS [] =  {
         {".rtttl", SONIVOX_PLAYER},
         {".rtx", SONIVOX_PLAYER},
         {".ota", SONIVOX_PLAYER},
+        {".ogg", STAGEFRIGHT_PLAYER},
 #ifdef OMAP_ENHANCEMENT
         {".wma", STAGEFRIGHT_PLAYER},
         {".wmv", STAGEFRIGHT_PLAYER},
         {".asf", STAGEFRIGHT_PLAYER},
-#else
-#ifdef USE_BOARD_MEDIAPLUGIN
-        {".ogg", STAGEFRIGHT_PLAYER},
 #endif
 #ifndef NO_OPENCORE
         {".wma", PV_PLAYER},
         {".wmv", PV_PLAYER},
         {".asf", PV_PLAYER},
-#endif
 #endif
         {".flac", FLAC_PLAYER},
 };
@@ -707,10 +703,13 @@ void MediaPlayerService::Client::disconnect()
 }
 
 static player_type getDefaultPlayerType() {
-#ifdef USE_BOARD_MEDIAPLUGIN
+#if defined(USE_BOARD_MEDIAPLUGIN)
     return BOARD_HW_PLAYER;
-#endif
+#elif defined(NO_OPENCORE)
     return STAGEFRIGHT_PLAYER;
+#else
+    return PV_PLAYER;
+#endif
 }
 
 player_type getPlayerType(int fd, int64_t offset, int64_t length)
@@ -732,7 +731,8 @@ player_type getPlayerType(int fd, int64_t offset, int64_t length)
         LOGV("These will be supported through stagefright.");
         return STAGEFRIGHT_PLAYER;
     }
-#else
+#endif
+
 #ifndef NO_OPENCORE
     if (ident == 0x75b22630) {
         // The magic number for .asf files, i.e. wmv and wma content.
@@ -741,9 +741,9 @@ player_type getPlayerType(int fd, int64_t offset, int64_t length)
     }
 #endif
 
-#endif
     if (ident == 0x43614c66) // 'fLaC'
         return FLAC_PLAYER;
+
     // Some kind of MIDI?
     EAS_DATA_HANDLE easdata;
     if (EAS_Init(&easdata) == EAS_SUCCESS) {
