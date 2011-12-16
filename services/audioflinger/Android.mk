@@ -1,3 +1,5 @@
+ifneq ($(BOARD_PREBUILT_LIBAUDIOFLINGER),true)
+
 LOCAL_PATH:= $(call my-dir)
 
 #AUDIO_POLICY_TEST := true
@@ -147,3 +149,5 @@ ifeq ($(BOARD_USE_MOTO_DOCK_HACK),true)
 endif
 
 include $(BUILD_SHARED_LIBRARY)
+
+endif
