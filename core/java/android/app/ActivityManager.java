@@ -233,7 +233,7 @@ public class ActivityManager {
             Point p = new Point();
             display.getRealSize(p);
             int pixels = p.x * p.y;
-            if (pixels >= (1024*600)) {
+            if (pixels >= (800*480)) {
                 // If this is a sufficiently large screen, then there are enough
                 // pixels on it that we'd really like to use hw drawing.
                 return true;
