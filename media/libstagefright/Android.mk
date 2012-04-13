@@ -1,4 +1,5 @@
 LOCAL_PATH:= $(call my-dir)
+ifneq ($(BOARD_USES_AMLOGICPLAYER),true)
 include $(CLEAR_VARS)
 
 ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
@@ -223,5 +224,6 @@ endif
 LOCAL_MODULE:= libstagefright
 
 include $(BUILD_SHARED_LIBRARY)
+endif
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
